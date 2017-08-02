@@ -1,0 +1,42 @@
+#+TITLE: The tw4e Layer, Task Warrior for spacEmacs
+
+* Table of Contents                                        :TOC_4_gh:noexport:
+- [[#description][Description]]
+- [[#install][Install]]
+- [[#key-bindings][Key bindings]]
+
+* Description
+  This layer provide the /tw4e/ package, i.e., Task Warrior for Emacs. This
+  package is currently embedded into the layer as a local package.
+
+  The package provide two major modes:
+  - the /Task Headers/ mode ([[help:tw4e/headers-mode][tw4e/headers-mode]]), that list the pending tasks;
+  - and the /Task Edit/ mode ([[help:tw4e/edit-mode][tw4e/edit-mode]]) that allow for editing =.task=
+    files ([[help:auto-mode-alist][auto-mode-alist]] is modified by [[help:tw4e/setup][tw4e/setup]]).
+  
+  The /Task Edit/ mode is designed to work in conjunction with the =task edit=
+  command. Internally, trying to edit a task means calling =task UUID edit= with
+  the editor being forced to =emacsclient=.
+
+* Install
+  To use this configuration layer, add it to your =~/.spacemacs=. You will need to
+  add =tw4e= to the existing =dotspacemacs-configuration-layers= list in this
+  file.
+
+  Add the following to your =~/.taskrc= file:
+  #+BEGIN_EXAMPLE
+  include ~/.tw4e.taskrc
+  #+END_EXAMPLE
+  And put the following into the =~/.tw4e.taskrc= file:
+  #+BEGIN_EXAMPLE
+  report.tw4e.description="Task Warrior for Emacs"
+  report.tw4e.columns=uuid,description.desc,urgency
+  report.tw4e.sort=urgency-
+  report.tw4e.filter=status=pending
+  #+END_EXAMPLE
+* Key bindings
+
+  | Key Binding | Description                                |
+  |-------------+--------------------------------------------|
+  | ~SPC a t~   | Popup the task headers (tw4e/headers-mode) |
+
