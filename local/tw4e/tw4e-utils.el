@@ -105,9 +105,9 @@
     ;; (mapcar* 'cons names lengths)))
 
 (defun tw4e--read-attribute (raw-name)
-  "Return the symbol corresponding to the attribute macthing the given RAW-NAME."
+  "Return the symbol corresponding to the attribute macthing the given RAW-NAME. See report.X.labels in .tw4e.taskrc."
   (cond
-   ((equal raw-name "Priority")    'priority)
+   ((equal raw-name "P")           'priority)
    ((equal raw-name "Tags")        'tags)
    ((equal raw-name "Due")         'due)
    ((equal raw-name "Urgency")     'urgency)
