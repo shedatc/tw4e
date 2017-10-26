@@ -62,23 +62,29 @@
     ;; tasks that block the current one.
     (not (null depends))))
 
-(defun tw4e--sort-by-urgency (tasks)
-  "Sort TASKS by decreasing urgency."
-  (seq-sort 'tw4e--more-urgent-than-p tasks))
+(defun tw4e--sort-by-urgency (tasks toc)
+  "Sort TASKS by decreasing urgency. Keep the TOC unchanged."
+  (list (seq-sort 'tw4e--more-urgent-than-p tasks) toc))
 
 (defun tw4e--pending-tasks ()
-  "Return the pending tasks."
-  (tw4e--sort-by-urgency (tw4e--fetch-and-read-tasks)))
+  "Return the pending tasks and the corresponding table of content."
+  (let* ((tt    (tw4e--fetch-and-read-tasks))
+         (tasks (car tt))
+         (toc   (cdr tt)))
+    (cons tasks toc)))
+    ;; (tw4e--sort-by-urgency tasks toc)))
 
-(defun tw4e--get-attribute-format-string (attribute)
-  "Return the format string suitable for the given task ATTRIBUTE."
-  (cond
-   ((equal attribute 'description) "%-99s")
-   ((equal attribute 'urgency) "%4.1f")))
+(defun tw4e--get-attribute-format-string (attribute toc)
+  "Return the format string suitable for the given task ATTRIBUTE and TOC."
+  (format "%%-%ds" (tw4e--get-attribute-column-width attribute toc)))
 
-(defun tw4e--format-attribute (attribute task)
-  "Return the properly formatted string representing the given ATTRIBUTE of the given TASK."
-  (format (tw4e--get-attribute-format-string attribute)
+(defun tw4e--get-attribute-column-width (attribute toc)
+  "Return the width of the column used to display ATTRIBUTE according to TOC."
+  (cdr (assoc attribute toc)))
+
+(defun tw4e--format-attribute (attribute task toc)
+  "Return the properly formatted string representing the given ATTRIBUTE of the given TASK in the context of TOC."
+  (format (tw4e--get-attribute-format-string attribute toc)
           (tw4e--get-attribute attribute task)))
 
 (defun tw4e--format-strings-as-table-row (strings properties)
@@ -87,38 +93,42 @@
                  (cons (mapconcat 'identity strings " ") properties))
           "\n"))
 
-(defun tw4e--format-task-as-table-row (task attributes properties)
+(defun tw4e--format-task-as-table-row (task toc attributes properties)
   "For the given TASK, return a table row containing its ATTRIBUTES propertized with the given PROPERTIES."
   (let* ((strings (mapcar (lambda (attribute)
-                            (tw4e--format-attribute attribute task))
+                            (tw4e--format-attribute attribute task toc))
                           attributes)))
     (tw4e--format-strings-as-table-row strings
                                        properties)))
 
-(defun tw4e--table-headers ()
+(defun tw4e--table-headers (toc)
   "Return the table headers."
   (let* ((properties '(face underline)))
-    (tw4e--format-strings-as-table-row (list (format (tw4e--get-attribute-format-string 'description)
-                                                     "Description")
-                                             "Urg ")
+    (tw4e--format-strings-as-table-row (list (format (format "%%-%ds" (tw4e--get-attribute-column-width 'priority toc))    "P")
+                                             (format (format "%%-%ds" (tw4e--get-attribute-column-width 'tags toc))        "Tags")
+                                             (format (format "%%-%ds" (tw4e--get-attribute-column-width 'due toc))         "Due")
+                                             (format (format "%%-%ds" (tw4e--get-attribute-column-width 'description toc)) "Description")
+                                             (format (format "%%-%ds" (tw4e--get-attribute-column-width 'urgency toc))     "Urg"))
                                        properties)))
 
-(defun tw4e--get-properties (task)
+(defun tw4e--get-properties (task toc)
   "Return the text properties that should be used to colorize the TASK."
   (cond
-   ((tw4e--active-p task) '(face tw4e/active-face))
-   ((tw4e--overdue-p task) '(face tw4e/overdue-face))
-   ((tw4e--blocked-p task) '(face tw4e/blocked-face))
+   (t                       '(face tw4e/normal-face))
+   ((tw4e--active-p task)   '(face tw4e/active-face))
+   ((tw4e--overdue-p task)  '(face tw4e/overdue-face))
+   ((tw4e--blocked-p task)  '(face tw4e/blocked-face))
    ((tw4e--blocking-p task) '(face tw4e/blocking-face))))
 
-(defun tw4e--table-content (tasks)
+(defun tw4e--table-content (tasks toc)
   "Return the table content, i.e., a line per task."
   (let* ((properties '()))
     (s-join ""
             (mapcar (lambda (task)
                       (tw4e--format-task-as-table-row task
-                                                      '(description urgency)
-                                                      (tw4e--get-properties task)))
+                                                      toc
+                                                      '(priority tags due description urgency)
+                                                      (tw4e--get-properties task toc)))
                     tasks))))
 
 (defun tw4e--task-at-point (tasks)

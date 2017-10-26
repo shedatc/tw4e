@@ -100,11 +100,16 @@
                               " "
                               t))
          (lengths (tw4e--column-lengths (tw4e--read-line))))
-    (mapcar* 'cons names lengths)))
+    (mapcar* (lambda (name length)
+               (cons (tw4e--read-attribute name) length)) names lengths)))
+    ;; (mapcar* 'cons names lengths)))
 
 (defun tw4e--read-attribute (raw-name)
   "Return the symbol corresponding to the attribute macthing the given RAW-NAME."
   (cond
+   ((equal raw-name "Priority")    'priority)
+   ((equal raw-name "Tags")        'tags)
+   ((equal raw-name "Due")         'due)
    ((equal raw-name "Urgency")     'urgency)
    ((equal raw-name "Description") 'description)
    ((equal raw-name "UUID")        'uuid)))
@@ -115,6 +120,9 @@
 (defun tw4e--read-value (attribute raw-value)
   "Normalize the RAW-VALUE of the given ATTRIBUTE."
   (cond
+   ((equal attribute 'priority)    (tw4e--rtrim raw-value))
+   ((equal attribute 'tags)        (tw4e--rtrim raw-value))
+   ((equal attribute 'due)         (tw4e--rtrim raw-value))
    ((equal attribute 'description) (tw4e--rtrim raw-value))
    ((equal attribute 'urgency)     (string-to-number raw-value))
    ((equal attribute 'uuid)        raw-value)))
@@ -122,15 +130,14 @@
 (defun tw4e--read-task (toc)
   "Parse the current line according to the TOC to return the task as an hash table."
   (seq-reduce (lambda (task toc-entry)
-                (let* ((name (car toc-entry))
+                (let* ((name   (car toc-entry))
                        (length (cdr toc-entry))
-                       (start (point))
-                       (end (+ start length)))
+                       (start  (point))
+                       (end    (+ start length)))
                   (if (<= end (line-end-position))
                       (let* ((raw-value (buffer-substring-no-properties start end))
-                             (attribute  (tw4e--read-attribute name))
-                             (value      (tw4e--read-value attribute raw-value)))
-                        (puthash attribute value task)
+                             (value     (tw4e--read-value name raw-value)))
+                        (puthash name value task)
                         (forward-char (+ length 1)) ;; Go to end+1.
                         task)
                     nil)))
@@ -138,8 +145,8 @@
               (make-hash-table :test 'equal)))
 
 (defun tw4e--read-tasks ()
-  "Read the tasks from the *Task* buffer."
-  (let* ((toc (tw4e--read-toc))
+  "Read the tasks from the *Task* buffer and return both the tasks and the corresponding table of content."
+  (let* ((toc   (tw4e--read-toc))
          (tasks (list)))
     (progn
       (setf task (tw4e--read-task toc))
@@ -148,7 +155,7 @@
                             (list task))
               task
               (tw4e--read-task toc)))
-      tasks)))
+      (list tasks toc))))
 
 (defun tw4e--fetch-and-read-tasks ()
   "Fetch the tasks into the *Task* buffer and read them."

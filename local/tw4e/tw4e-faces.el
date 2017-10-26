@@ -6,6 +6,12 @@
   :group 'tw4e
   :group 'faces)
 
+(defface tw4e/normal-face '((((class color)) :foreground "black"
+                             ;; :background "white"
+                             ))
+  "Face used to colorize the normal tasks."
+  :group 'tw4e/faces)
+
 (defface tw4e/active-face '((((class color)) :foreground "grey"
                              :background "pink"))
   "Face used to colorize the active tasks."
