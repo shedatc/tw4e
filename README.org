@@ -6,6 +6,7 @@
 - [[#key-bindings][Key bindings]]
 
 * Description
+
   This layer provide the /tw4e/ package, i.e., Task Warrior for Emacs. This
   package is currently embedded into the layer as a local package.
 
@@ -19,6 +20,7 @@
   the editor being forced to =emacsclient=.
 
 * Install
+
   To use this configuration layer, add it to your =~/.spacemacs=. You will need to
   add =tw4e= to the existing =dotspacemacs-configuration-layers= list in this
   file.
@@ -27,16 +29,11 @@
   #+BEGIN_EXAMPLE
   include ~/.tw4e.taskrc
   #+END_EXAMPLE
-  And put the following into the =~/.tw4e.taskrc= file:
-  #+BEGIN_EXAMPLE
-  report.tw4e.description="Task Warrior for Emacs"
-  report.tw4e.columns=uuid,description.desc,urgency
-  report.tw4e.sort=urgency-
-  report.tw4e.filter=status=pending
-  #+END_EXAMPLE
+  And copy =dot.tw4e.taskrc.sample= to =~/.tw4e.taskrc=.
+
 * Key bindings
 
-  | Key Binding | Description                                |
-  |-------------+--------------------------------------------|
-  | ~SPC a t~   | Popup the task headers (tw4e/headers-mode) |
+  | Key Binding | Description                                  |
+  |-------------+----------------------------------------------|
+  | ~SPC a t~   | Popup the task headers (=tw4e/headers-mode=) |
 
