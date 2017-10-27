@@ -58,6 +58,10 @@
   (get-buffer-create tw4e/log-buffer-name))
 
 (defun tw4e--run (&optional command filter extra)
+
+  ;; XXX
+  ;; (interactive)
+
   (let* ((args (tw4e--build-program-args command filter extra))
          (cmdline (format "%s %s"
                           tw4e/program-path
@@ -94,6 +98,10 @@
 
 (defun tw4e--read-toc ()
   "Read the report headers from the *Task* buffer to build the table of content."
+
+  ;; XXX
+  ;; (interactive)
+
   (beginning-of-buffer)
   (forward-line)
   (let* ((names (split-string (tw4e--read-line)
@@ -107,12 +115,13 @@
 (defun tw4e--read-attribute (raw-name)
   "Return the symbol corresponding to the attribute macthing the given RAW-NAME. See report.X.labels in .tw4e.taskrc."
   (cond
-   ((equal raw-name "P")           'priority)
-   ((equal raw-name "Tags")        'tags)
-   ((equal raw-name "Due")         'due)
-   ((equal raw-name "Urgency")     'urgency)
-   ((equal raw-name "Description") 'description)
-   ((equal raw-name "UUID")        'uuid)))
+   ((equal raw-name "priority")      'priority)
+   ((equal raw-name "tags")          'tags)
+   ((equal raw-name "due.formatted") 'due-date)
+   ((equal raw-name "due.relative")  'due-relative)
+   ((equal raw-name "urgency")       'urgency)
+   ((equal raw-name "description")   'description)
+   ((equal raw-name "uuid")          'uuid)))
 
 (defun tw4e--rtrim (str)
   (reverse (seq-drop-while (lambda (c) (char-equal c #x20)) (reverse str))))
@@ -120,12 +129,13 @@
 (defun tw4e--read-value (attribute raw-value)
   "Normalize the RAW-VALUE of the given ATTRIBUTE."
   (cond
-   ((equal attribute 'priority)    (tw4e--rtrim raw-value))
-   ((equal attribute 'tags)        (tw4e--rtrim raw-value))
-   ((equal attribute 'due)         (tw4e--rtrim raw-value))
-   ((equal attribute 'description) (tw4e--rtrim raw-value))
-   ((equal attribute 'urgency)     (string-to-number raw-value))
-   ((equal attribute 'uuid)        raw-value)))
+   ((equal attribute 'priority)     (tw4e--rtrim raw-value))
+   ((equal attribute 'tags)         (tw4e--rtrim raw-value))
+   ((equal attribute 'due-date)     (tw4e--rtrim raw-value))
+   ((equal attribute 'due-relative) (tw4e--rtrim raw-value))
+   ((equal attribute 'description)  (tw4e--rtrim raw-value))
+   ((equal attribute 'urgency)      (string-to-number raw-value))
+   ((equal attribute 'uuid)         raw-value)))
 
 (defun tw4e--read-task (toc)
   "Parse the current line according to the TOC to return the task as an hash table."

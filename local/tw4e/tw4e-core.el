@@ -29,7 +29,7 @@
 
 (defun tw4e--overdue-p (task)
   "Tell if the given TASK is overdue."
-  (let* ((due (tw4e--get-attribute 'due task)))
+  (let* ((due (tw4e--get-attribute 'due-date task)))
     ;; due is a string formatted as YYYYMMDDTHHMMSSZ, i.e., ISO 8601 combined
     ;; date and time in UTC."
     (if (null due)
@@ -76,7 +76,10 @@
 
 (defun tw4e--get-attribute-format-string (attribute toc)
   "Return the format string suitable for the given task ATTRIBUTE and TOC."
-  (format "%%-%ds" (tw4e--get-attribute-column-width attribute toc)))
+;;   (format "%%-%ds" (tw4e--get-attribute-column-width attribute toc)))
+;; (defun tw4e--get-column-value-format (column toc)
+  (let* ((vf (tw4e--get-column-property attribute 'format)))
+    (s-replace "*" (number-to-string (tw4e--get-attribute-column-width attribute toc)) vf)))
 
 (defun tw4e--get-attribute-column-width (attribute toc)
   "Return the width of the column used to display ATTRIBUTE according to TOC."
@@ -101,14 +104,28 @@
     (tw4e--format-strings-as-table-row strings
                                        properties)))
 
+(defun tw4e--get-column-property (column property)
+  (cdr (assoc property (cdr (assoc column tw4e/columns-definitions)))))
+
+(defun tw4e--get-column-label-format (column toc)
+  (let* ((lf (tw4e--get-column-property column 'label-format)))
+    (s-replace "*" (number-to-string (tw4e--get-attribute-column-width column toc)) lf)))
+
+(defun tw4e--get-column-label (column toc)
+  (let* ((lf (tw4e--get-column-label-format column toc)))
+    (format lf (tw4e--get-column-property column 'label))))
+
+;; (list (cons 'uuid 36) (cons 'priority 1) (cons 'tags 29) (cons 'due-date 10) (cons 'due-relative 3) (cons 'description 54) (cons 'urgency 6))
 (defun tw4e--table-headers (toc)
   "Return the table headers."
   (let* ((properties '(face underline)))
-    (tw4e--format-strings-as-table-row (list (format (format "%%-%ds" (tw4e--get-attribute-column-width 'priority toc))    "P")
-                                             (format (format "%%-%ds" (tw4e--get-attribute-column-width 'tags toc))        "Tags")
-                                             (format (format "%%-%ds" (tw4e--get-attribute-column-width 'due toc))         "Due")
-                                             (format (format "%%-%ds" (tw4e--get-attribute-column-width 'description toc)) "Description")
-                                             (format (format "%%-%ds" (tw4e--get-attribute-column-width 'urgency toc))     "Urg"))
+    (tw4e--format-strings-as-table-row (list (tw4e--get-column-label 'priority     toc)
+                                             (tw4e--get-column-label 'tags         toc)
+                                             (tw4e--get-column-label 'due-date     toc)
+                                             (tw4e--get-column-label 'due-relative toc)
+                                             (tw4e--get-column-label 'description  toc)
+                                             (tw4e--get-column-label 'urgency      toc)
+                                             )
                                        properties)))
 
 (defun tw4e--get-properties (task toc)
@@ -127,7 +144,7 @@
             (mapcar (lambda (task)
                       (tw4e--format-task-as-table-row task
                                                       toc
-                                                      '(priority tags due description urgency)
+                                                      '(priority tags due-date due-relative description urgency)
                                                       (tw4e--get-properties task toc)))
                     tasks))))
 

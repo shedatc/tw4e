@@ -1,5 +1,5 @@
 report.tw4e.description="Task Warrior for spacEmacs"
-report.tw4e.columns=uuid,priority,tags,due,description.desc,urgency
-report.tw4e.labels=UUID,P,Tags,Due,Description,Urgency
+report.tw4e.columns=uuid,priority,tags,due.formatted,due.relative,description.desc,urgency
+report.tw4e.labels=uuid,priority,tags,due.formatted,due.relative,description,urgency
 report.tw4e.sort=urgency-
 report.tw4e.filter=status=pending
